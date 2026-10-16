@@ -34,10 +34,15 @@ const statHits = document.querySelector("#statHits");
 const statStreak = document.querySelector("#statStreak");
 const statAcc = document.querySelector("#statAcc");
 const overMeta = document.querySelector("#overMeta");
+const timeHud = document.querySelector(".hud-time");
+const timeLabel = timeHud ? timeHud.querySelector(".hud-label") : null;
+const pauseTimeLabel = document.querySelector("#pauseTimeLabel");
+const pauseTime = document.querySelector("#pauseTime");
 
-let roundSecs = 60;          // chosen ONLY on the setup screen
+let roundSecs = 60;          // chosen ONLY on the setup screen; 0 = unlimited
 let mode = "easy";            // easy | medium | hard — chosen ONLY on the setup screen
-let timer = roundSecs;
+let timer = roundSecs;        // seconds remaining (limited rounds)
+let elapsed = 0;              // seconds played (unlimited rounds)
 let score = 0;
 let hit = -1;
 let timerId = null;
@@ -53,6 +58,8 @@ bestVal.textContent = best;
 
 const randDigit = () => Math.floor(Math.random() * 10);
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const unlimited = () => roundSecs === 0; // no clock: the round runs until you end it
+const roundLabel = () => (unlimited() ? "∞" : roundSecs + "S");
 
 function safePlay(el) {
   if (!soundOn || !el) return;
@@ -262,8 +269,11 @@ document.querySelectorAll(".dur").forEach((btn) => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".dur").forEach((b) => b.classList.remove("active"));
     btn.classList.add("active");
-    roundSecs = Number(btn.dataset.secs) || 60;
+    // data-secs="0" is a legitimate pick (unlimited), so 0 must not fall back to 60
+    const secs = Number(btn.dataset.secs);
+    roundSecs = Number.isFinite(secs) ? secs : 60;
     timer = roundSecs;
+    elapsed = 0;
     updateTimerUI();
   }, { passive: true });
 });
@@ -304,6 +314,14 @@ function updateScoreUI(flash) {
 }
 
 function updateTimerUI() {
+  if (timeHud) timeHud.classList.toggle("unlimited", unlimited());
+  if (timeLabel) timeLabel.textContent = unlimited() ? "Elapsed" : "Time";
+  if (unlimited()) {
+    // no countdown to show — report how long you've lasted instead
+    timerNum.textContent = elapsed;
+    timerBar.classList.remove("low", "critical");
+    return;
+  }
   timerNum.textContent = timer;
   const pct = Math.max(0, (timer / roundSecs) * 100);
   timerBar.style.width = pct + "%";
@@ -719,6 +737,12 @@ function runTimer() {
   clearTimer();
   timerId = setInterval(() => {
     if (paused) return;
+    if (unlimited()) {
+      // nothing to run down, so count up — the round ends only when you end it
+      elapsed++;
+      updateTimerUI();
+      return;
+    }
     if (timer > 0) {
       timer--;
       updateTimerUI();
@@ -743,6 +767,7 @@ function showSetup() {
   score = 0; streak = 0; bestStreak = 0; hits = 0; misses = 0;
   hit = -1; hitVal.textContent = "–";
   timer = roundSecs;
+  elapsed = 0;
   updateScoreUI();
   updateTimerUI();
   makeBubble(false);
@@ -753,6 +778,7 @@ function startGame() {
   stopAllSfx(); // never let the round-over fanfare bleed into the new round
   clearTimer();
   timer = roundSecs;
+  elapsed = 0;
   score = 0; hit = -1;
   streak = 0; bestStreak = 0; hits = 0; misses = 0;
   paused = false;
@@ -789,7 +815,7 @@ function endGame() {
   statHits.textContent = hits;
   statStreak.textContent = bestStreak;
   statAcc.textContent = (total === 0 ? 0 : Math.round((hits / total) * 100)) + "%";
-  if (overMeta) overMeta.textContent = mode.toUpperCase() + " · " + roundSecs + "S";
+  if (overMeta) overMeta.textContent = mode.toUpperCase() + " · " + roundLabel();
   newBestMsg.classList.toggle("hidden", !(isBest && score > 0));
   // simple count-up, rAF only (no lib)
   const t0 = performance.now();
@@ -807,7 +833,8 @@ function pauseGame() {
   if (!playing || paused) return;
   paused = true;
   document.querySelector("#pauseScore").textContent = score;
-  document.querySelector("#pauseTime").textContent = timer;
+  pauseTime.textContent = unlimited() ? elapsed : timer;
+  if (pauseTimeLabel) pauseTimeLabel.textContent = unlimited() ? "s elapsed" : "s left";
   pauseOverlay.classList.remove("hidden");
   pauseBtn.textContent = "▶";
   pauseBtn.setAttribute("aria-label", "Resume game");

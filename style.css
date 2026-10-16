@@ -78,6 +78,8 @@ body{
 .hud-time-num{font-family:"JetBrains Mono",monospace;color:var(--muted);font-size:.78rem}
 .hud-time-num strong{color:var(--text);font-size:1.35rem;margin-right:2px}
 .timer-track{height:4px;border-radius:99px;background:var(--track);overflow:hidden}
+/* unlimited rounds have no countdown to drain, so the bar goes away */
+.hud-time.unlimited .timer-track{display:none}
 #timerbar{height:100%;width:100%;border-radius:99px;background:var(--text);transition:width 1s linear}
 #timerbar.low{background:var(--accent)}
 #timerbar.critical{background:var(--danger)}
@@ -154,7 +156,7 @@ body{
 .card h1.final{font-family:"JetBrains Mono",monospace;font-size:clamp(3rem,12vw,4.4rem);color:var(--accent);margin:4px 0}
 .sub{color:var(--muted);font-size:.9rem;line-height:1.6;margin-bottom:22px}
 .sub b{color:var(--text)}
-.dur-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.dur-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
 .dur{border:1px solid var(--line);background:var(--soft);color:var(--text);
   border-radius:14px;padding:14px 8px;cursor:pointer;display:flex;flex-direction:column;gap:4px;
   transition:border-color .15s,background .15s}
@@ -240,7 +242,7 @@ body{
   .card h1.final{font-size:2.6rem}
   .sub{font-size:.82rem;margin-bottom:16px}
   .setup-label{margin:0 0 8px}
-  .dur-row{grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+  .dur-row{grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
   .diff-row{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
   .diff-row .diff:last-child{grid-column:1/-1}
   .dur{flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:10px 4px}

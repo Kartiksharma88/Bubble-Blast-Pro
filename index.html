@@ -72,6 +72,7 @@
             <button class="dur" data-secs="30"><strong>30s</strong><span>sprint</span></button>
             <button class="dur active" data-secs="60"><strong>60s</strong><span>classic</span></button>
             <button class="dur" data-secs="90"><strong>90s</strong><span>marathon</span></button>
+            <button class="dur" data-secs="0"><strong>∞</strong><span>unlimited</span></button>
           </div>
           <p class="setup-label">Difficulty</p>
           <div class="diff-row" role="group" aria-label="Difficulty">
@@ -133,7 +134,7 @@
           </div>
           <p class="eyebrow">Paused</p>
           <h1>Take a breath.</h1>
-          <p class="sub"><span id="pauseScore">0</span> pts · <span id="pauseTime">0</span>s left</p>
+          <p class="sub"><span id="pauseScore">0</span> pts · <span id="pauseTime">0</span><span id="pauseTimeLabel">s left</span></p>
           <button id="resumeButton" class="cta">Resume →</button>
           <button id="quitButton" class="ghost">End round</button>
         </div>

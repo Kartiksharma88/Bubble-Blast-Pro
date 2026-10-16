@@ -40,8 +40,10 @@ best score is saved locally in the browser.
 | **Extreme** | ✅ bounce | ✅ free piling | all numbers re-roll + speed burst |
 | **Custom** | your choice | your choice | popped / all / frozen |
 
-Round length is chosen on the setup screen: **30s** sprint, **60s** classic, or
-**90s** marathon.
+Round length is chosen on the setup screen: **30s** sprint, **60s** classic,
+**90s** marathon, or **∞ unlimited** — no clock at all. In an unlimited round the
+HUD stops counting down and counts *up* instead, and the round runs until you
+pause and choose **End round**.
 
 ## Features
 
