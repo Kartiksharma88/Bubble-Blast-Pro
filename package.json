@@ -1,0 +1,23 @@
+{
+  "name": "bubble-blast-pro",
+  "version": "1.0.0",
+  "description": "A precision bubble-popping time trial. Pop the bubble that matches the **target** number before the clock runs out — chase a perfect streak, then watch it break.",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kartiksharma88/Bubble-Blast-Pro.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kartiksharma88/Bubble-Blast-Pro/issues"
+  },
+  "homepage": "https://github.com/Kartiksharma88/Bubble-Blast-Pro#readme",
+  "dependencies": {
+    "@vercel/speed-insights": "^2.0.0"
+  }
+}
