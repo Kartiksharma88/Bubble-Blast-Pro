@@ -7,13 +7,8 @@ number before the clock runs out — chase a perfect streak, then watch it break
   <img src="logo.png" alt="Bubble Blast Pro logo" width="160">
 </p>
 
-<!-- ============================================================
-     LIVE DEMO LINK
-     Replace the placeholder on the line below with your deployed
-     URL once the site is live, then delete this comment block.
-     Example: [▶ Play Bubble Blast Pro](https://bubble-blast-pro.netlify.app)
-     ============================================================ -->
-### 🔗 **Live Demo:** → https://bubble-blast-pro.vercel.app
+<!-- Replace the URL below if the deployment ever moves. -->
+### 🔗 **Live Demo:** [bubble-blast-pro.vercel.app](https://bubble-blast-pro.vercel.app)
 
 ---
 
@@ -122,8 +117,8 @@ Because there is no build step, you can publish the repository as-is:
 - **Netlify / Vercel / Cloudflare Pages** — point them at the repo, no build command,
   publish directory `.` (the project root).
 
-Once it's live, paste the URL into the **Live Demo** placeholder at the top of
-this file.
+This project is currently deployed on **Vercel**:
+<https://bubble-blast-pro.vercel.app>
 
 ## License
 
