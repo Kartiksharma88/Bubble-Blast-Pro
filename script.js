@@ -65,11 +65,29 @@ function safePlay(el) {
 const sfx = (id) => safePlay(document.getElementById(id));
 
 /* Haptics: Vibration API (Android/Chrome & most mobile browsers; a silent
-   no-op on desktop / iOS, which don't expose navigator.vibrate). Pattern
-   is a number of ms, or an on/off array — [wait, on, wait, on, …]. */
+   no-op on desktop / iOS, which don't expose navigator.vibrate).
+
+   The API gives no amplitude control — only *how long* and *in what rhythm* —
+   so "feel" is built from pulse length and spacing. Two rules learned the
+   hard way: devices drop or round up pulses shorter than ~20 ms (the earlier
+   16 ms tap was essentially imperceptible), and array indices alternate
+   starting with VIBRATE, i.e. [on, off, on, off, …] — not [wait, on, …]. */
+const HAPTIC = {
+  // single tap that lands a little heavier with every hit in the streak (30 → 42 ms),
+  // so the board audibly "charges up" on the way to the +25 bonus
+  hit: (streak) => 26 + (streak % STREAK_EVERY) * 4,
+  bonus: [22, 40, 30, 40, 55],   // rising triple — reward feels like a flourish
+  miss: [45, 60, 80],            // heavy two-stage thud: clear "no"
+  end: [70, 60, 70, 60, 160]     // round-over fanfare
+};
+
 function buzz(pattern) {
   if (!hapticOn) return;
-  try { if (navigator.vibrate) navigator.vibrate(pattern); } catch (_) {}
+  try {
+    if (!navigator.vibrate) return;
+    navigator.vibrate(0); // drop any in-flight buzz so fast pops stay snappy
+    navigator.vibrate(pattern);
+  } catch (_) {}
 }
 
 /* Stop helpers: the round-over fanfare is long — it must die the moment
@@ -617,7 +635,7 @@ function correctAt(x, y, el) {
   floatText(x, y, "+" + POINTS_GOOD, "good");
   if (bonus) setTimeout(() => floatText(x, y + 22, "+" + bonus + " streak", "bonus"), 130);
   sfx("scoreIncreaseSound");
-  buzz(bonus ? [14, 34, 26] : 16); // shorter tick on a hit, double-pulse on a streak bonus
+  buzz(bonus ? HAPTIC.bonus : HAPTIC.hit(streak)); // tap hardens with the streak, flourish on the bonus
   const s = settings();
   if (s.numbers === "frozen") {
     // nothing changes anywhere — brief flash only
@@ -685,7 +703,7 @@ function wrongAt(x, y, el) {
   const lost = before - score;
   if (lost > 0) floatText(x, y, "−" + lost, "bad"); // score 0 → red flash only, no fake −5
   sfx("scoreDecreaseSound");
-  buzz([22, 38, 22]); // heavier double-buzz reads as "miss"
+  buzz(HAPTIC.miss); // heavier, longer than any hit — a miss should never feel like a pop
   if (el) {
     el.classList.remove("wrong");
     void el.offsetWidth;
@@ -760,7 +778,7 @@ function endGame() {
   stopSfx("scoreIncreaseSound"); // don't layer the fanfare over a last-moment pop
   stopSfx("scoreDecreaseSound");
   sfx("timerEndSound");
-  buzz([0, 45, 70, 45]); // round-over signature
+  buzz(HAPTIC.end); // round-over signature
   const isBest = score > best;
   if (isBest) {
     best = score;
@@ -860,7 +878,7 @@ hapticBtn.addEventListener("click", () => {
   hapticOn = !hapticOn;
   try { localStorage.setItem("bubble-blast-haptics", hapticOn ? "on" : "off"); } catch (_) {}
   syncHapticBtn();
-  if (hapticOn) buzz(18); // feel it the instant it's switched on
+  if (hapticOn) buzz(HAPTIC.hit(1)); // feel it the instant it's switched on
 });
 
 let resizeT = null;
