@@ -278,26 +278,53 @@ document.querySelectorAll(".dur").forEach((btn) => {
   }, { passive: true });
 });
 
-function boardCapacity() {
-  // Fill complete rows only: live column count × fixed row target,
-  // so the last row is never left half-empty.
-  try {
-    const cs = getComputedStyle(pbtm);
-    const gap = parseFloat(cs.columnGap) || 10;
-    const cell = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell")) || 52;
-    const padL = parseFloat(cs.paddingLeft) || 0;
-    const padR = parseFloat(cs.paddingRight) || 0;
-    const avail = pbtm.clientWidth - padL - padR; // content box only, not padding
-    if (avail > 0) {
-      const cols = Math.max(4, Math.floor((avail + gap) / (cell + gap)));
-      const rows = window.innerWidth <= 480 ? 6 : window.innerHeight < 700 ? 6 : 7;
-      return cols * rows;
+/* Board geometry. The panel now has a definite height (flex), so size the
+   grid to the box that is actually available: pick the column count whose
+   cell size keeps the bubbles closest to their intended size while filling
+   the panel, then let the leftover centre out. Square cells, no clipping,
+   and a tall phone gets a tall board instead of dead space. */
+const pbtmWrap = document.querySelector("#pbtm-wrap");
+let fit = { cols: 7, rows: 6, cell: 44 }; // last measured geometry
+
+function fitBoard() {
+  const cs = getComputedStyle(pbtm);
+  const gap = parseFloat(cs.columnGap) || 10;
+  const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+  const padY = (parseFloat(cs.paddingTop) || 0) + (parseFloat(cs.paddingBottom) || 0);
+  const availW = pbtm.clientWidth - padX;
+  const availH = pbtm.clientHeight - padY;
+  const baseCell = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--cell")) || 44;
+  if (availW < 80 || availH < 80) return false; // not laid out yet — keep the last fit
+
+  // the density the game had before (width-only rule) is the target, so filling
+  // the panel never silently makes the board harder
+  const baseCols = Math.max(3, Math.floor((availW + gap) / (baseCell + gap)));
+  const baseRows = (window.innerWidth <= 480 || window.innerHeight < 700) ? 6 : 7;
+  const target = baseCols * baseRows;
+
+  let best = null;
+  for (const minCell of [baseCell * 0.8, 22]) {
+    for (let cols = 3; cols <= baseCols + 2; cols++) {
+      const cell = (availW - (cols - 1) * gap) / cols; // fills the width exactly
+      if (cell < minCell) continue;
+      const rows = Math.floor((availH + gap) / (cell + gap));
+      if (rows < 2) continue;
+      const slack = (availH - (rows * cell + (rows - 1) * gap)) / availH;
+      const score = Math.abs(cols * rows - target) / target + slack * 2;
+      if (!best || score < best.score) best = { cols, rows, cell, score };
     }
-  } catch (_) {}
-  const w = window.innerWidth; // fallback when layout isn't measurable
-  if (w <= 480) return 36;
-  if (w <= 760) return 48;
-  return 84;
+    if (best) break;
+  }
+  if (!best) return false;
+
+  fit = best;
+  pbtm.style.setProperty("--cell", best.cell + "px");
+  pbtm.style.gridTemplateColumns = "repeat(" + best.cols + ", var(--cell))";
+  return true;
+}
+
+function boardCapacity() {
+  return fit.cols * fit.rows; // fallback: last measured fit
 }
 
 function updateScoreUI(flash) {
@@ -377,7 +404,8 @@ function ensureHitExists(count = 3) {
 }
 
 function makeBubble(spawnAnim) {
-  const count = boardCapacity();
+  fitBoard();
+  const count = boardCapacity(); // fitted cols × rows
   const frag = document.createDocumentFragment();
   for (let i = 0; i < count; i++) {
     const v = randDigit();
@@ -524,7 +552,11 @@ const driftActive = () => driftRAF !== null;
 function driftBounds() {
   driftW = pbtm.clientWidth;
   driftH = pbtm.clientHeight;
-  driftSize = Math.max(38, Math.min(54, Math.floor(driftW / 9) || 50));
+  // stay at the board's scale, but small enough that the whole set can spread
+  // out without permanent overlap
+  const n = Math.max(1, driftCells.length || fit.cols * fit.rows);
+  const room = Math.sqrt((driftW * driftH) / n) * 0.72;
+  driftSize = Math.round(Math.max(30, Math.min(fit.cell, room)));
   pbtm.style.setProperty("--drift-size", driftSize + "px");
 }
 
@@ -914,6 +946,7 @@ window.addEventListener("resize", () => {
   resizeT = setTimeout(() => {
     if (driftActive()) { driftBounds(); return; }
     if (!playing) makeBubble(false);
+    else fitBoard(); // mid-round: resize the cells in place, keep the numbers
   }, 250);
 }, { passive: true });
 
