@@ -13,7 +13,7 @@ number before the clock runs out — chase a perfect streak, then watch it break
      URL once the site is live, then delete this comment block.
      Example: [▶ Play Bubble Blast Pro](https://bubble-blast-pro.netlify.app)
      ============================================================ -->
-### 🔗 **Live Demo:** _Add your deployed link here → https://bubble-blast-pro.vercel.app
+### 🔗 **Live Demo:** → https://bubble-blast-pro.vercel.app
 
 ---
 
