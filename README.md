@@ -15,8 +15,8 @@ number before the clock runs out — chase a perfect streak, then watch it break
 ## How to play
 
 1. A **target** number is shown at the top of the board.
-2. Pop the bubble carrying that number — click/tap it, or press the matching
-   number key (`0`–`9`).
+2. Pop the bubble carrying that number — click or tap it (bubbles are
+   pointer-only, there are no number-key shortcuts).
 3. Every round is a race against the clock.
 
 ### Scoring
@@ -55,7 +55,8 @@ pause and choose **End round**.
 - **Sound effects** for hits, misses and round-over, with a mute toggle.
 - **Haptic feedback** on supported devices (Vibration API) — distinct pulses for
   hits, misses and streak bonuses, with its own on/off toggle.
-- **Keyboard play** — number keys pop, `Space`/`Esc` pause, `Enter` starts.
+- **Pointer-only popping** — click or tap the bubble; `Space`/`Esc` pause and
+  `Enter` starts a round from the setup screen.
 - **Responsive** and touch-friendly, with `prefers-reduced-motion` support.
 
 ## Controls
@@ -63,7 +64,6 @@ pause and choose **End round**.
 | Input | Action |
 | --- | --- |
 | Click / tap a bubble | Pop it |
-| `0` – `9` | Pop the first bubble with that number |
 | `Space` / `Esc` | Pause / resume |
 | `Enter` | Start a round from the setup screen |
 | `☾` / `☀` | Toggle theme |

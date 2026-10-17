@@ -910,22 +910,10 @@ pbtm.addEventListener("click", (e) => {
   }
 });
 
-/* keyboard play: digits pop first matching bubble, space pauses */
+/* keyboard: space/esc pauses, enter starts — bubbles themselves are pointer-only,
+   so a mouse or a finger is the one way to pop one */
 document.addEventListener("keydown", (e) => {
-  if (/^[0-9]$/.test(e.key) && playing && !paused &&
-      startOverlay.classList.contains("hidden") && gameOverOverlay.classList.contains("hidden")) {
-    const want = Number(e.key);
-    if (want === hit) {
-      const cell = [...pbtm.querySelectorAll(".bubble")].find((b) => Number(b.dataset.val) === hit);
-      const r = (cell || pbtm).getBoundingClientRect();
-      correctAt(r.left + r.width / 2, r.top + r.height / 2, cell || pbtm);
-      getNewHit();
-      ensureHitExists(2);
-    } else {
-      const r = pbtm.getBoundingClientRect();
-      wrongAt(r.left + r.width / 2, r.top + 60, null);
-    }
-  } else if ((e.code === "Space" || e.key === "Escape") && playing && gameOverOverlay.classList.contains("hidden")) {
+  if ((e.code === "Space" || e.key === "Escape") && playing && gameOverOverlay.classList.contains("hidden")) {
     e.preventDefault();
     paused ? resumeGame() : pauseGame();
   } else if (e.key === "Enter" && !startOverlay.classList.contains("hidden")) {
