@@ -191,9 +191,11 @@ body{
 .seg button.on{background:var(--accent);color:var(--accent-ink)}
 /* liquid-shuffle motion: longer transform glide while reordering */
 #pbtm.liquid .bubble{transition:transform .45s cubic-bezier(.22,1,.36,1),border-color .12s ease,color .12s ease}
-/* hard-mode drift arena: bubbles float continuously inside the box */
-#pbtm.drift{display:block;position:relative;overflow:hidden;min-height:380px}
-#pbtm.drift .bubble{position:absolute;top:0;left:0;width:var(--drift-size,50px);height:var(--drift-size,50px);min-height:0;margin:0;will-change:transform}
+/* hard-mode drift arena: heights come from the base rule (height:100%), so the
+   arena can never outgrow the panel box and hide bubbles under the clip edge */
+#pbtm.drift{display:block;position:relative;overflow:hidden}
+#pbtm.drift .bubble{position:absolute;left:var(--drift-x,0px);top:var(--drift-y,0px);
+  width:var(--drift-size,50px);height:var(--drift-size,50px);min-height:0;margin:0;will-change:transform}
 .cta{width:100%;border:none;cursor:pointer;font-size:.92rem;font-weight:700;letter-spacing:.5px;
   color:var(--accent-ink);background:var(--accent);border-radius:13px;padding:15px 20px;
   transition:transform .12s ease,filter .15s}
@@ -236,7 +238,6 @@ body{
   .hud-time-num strong{font-size:1.1rem}
   /* board */
   #pbtm{gap:8px;padding:14px 14px 20px}
-  #pbtm.drift{min-height:320px}
   .bubble{font-size:.92rem}
   /* overlays: room to scroll, compact cards */
   .overlay{padding:12px}

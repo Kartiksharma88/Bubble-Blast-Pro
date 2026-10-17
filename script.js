@@ -550,14 +550,31 @@ let driftSolid = true; // false = overlap allowed (extreme / custom)
 const driftActive = () => driftRAF !== null;
 
 function driftBounds() {
-  driftW = pbtm.clientWidth;
-  driftH = pbtm.clientHeight;
+  const cs = getComputedStyle(pbtm);
+  const padL = parseFloat(cs.paddingLeft) || 0;
+  const padT = parseFloat(cs.paddingTop) || 0;
+  const padX = padL + (parseFloat(cs.paddingRight) || 0);
+  const padY = padT + (parseFloat(cs.paddingBottom) || 0);
+  // absolute children sit at the padding edge, so offset them in and measure the
+  // room they really have — then bubbles stay inside the padded box like the grid
+  pbtm.style.setProperty("--drift-x", padL + "px");
+  pbtm.style.setProperty("--drift-y", padT + "px");
+  driftW = Math.max(1, pbtm.clientWidth - padX);
+  driftH = Math.max(1, pbtm.clientHeight - padY);
   // stay at the board's scale, but small enough that the whole set can spread
   // out without permanent overlap
   const n = Math.max(1, driftCells.length || fit.cols * fit.rows);
   const room = Math.sqrt((driftW * driftH) / n) * 0.72;
-  driftSize = Math.round(Math.max(30, Math.min(fit.cell, room)));
+  driftSize = Math.round(Math.max(30, Math.min(fit.cell, room, driftW, driftH)));
   pbtm.style.setProperty("--drift-size", driftSize + "px");
+
+  // a resize can move the walls in — pull any bubble that is now outside back in
+  const maxX = Math.max(1, driftW - driftSize), maxY = Math.max(1, driftH - driftSize);
+  for (const c of driftCells) {
+    c.x = Math.max(0, Math.min(maxX, c.x));
+    c.y = Math.max(0, Math.min(maxY, c.y));
+    c.el.style.transform = `translate(${c.x}px,${c.y}px)`;
+  }
 }
 
 /* Circle-vs-circle collision: bubbles never overlap — on contact they
@@ -594,11 +611,10 @@ function collideCells(withBounce) {
 function startDrift() {
   stopDrift();
   if (reducedMotion()) return;
-  // freeze current grid height so switching to absolute layout never jumps
-  const h = pbtm.offsetHeight;
-  const minArena = window.innerWidth < 640 ? 320 : 380;
+  // No frozen pixel height: the arena is height:100%, so it tracks the panel
+  // box even when the header grows (the pause button appearing can wrap the
+  // top bar and steal ~40px — a frozen arena would then hang out of the clip).
   pbtm.classList.add("drift");
-  pbtm.style.height = Math.max(h, minArena) + "px";
   driftBounds();
   driftSolid = !settings().overlap;
   driftCells = [...pbtm.querySelectorAll(".bubble")].map((el) => {
@@ -817,12 +833,14 @@ function startGame() {
   playing = true;
   updateScoreUI();
   updateTimerUI();
+  // reveal the board before measuring it: hiding the setup card also un-hides the
+  // pause button, which can re-wrap the top bar and change the panel height
+  setOverlays({ start: false, pause: false, over: false });
   makeBubble(true);
   getNewHit();
   ensureHitExists();
   if (settings().drift) startDrift();
   else stopDrift();
-  setOverlays({ start: false, pause: false, over: false });
   runTimer();
 }
 
@@ -942,9 +960,11 @@ hapticBtn.addEventListener("click", () => {
 
 let resizeT = null;
 window.addEventListener("resize", () => {
+  // drift: re-fit at once — the arena walls can move (mobile URL bar) and a
+  // debounced re-fit would leave bubbles hanging out of the clip box
+  if (driftActive()) { driftBounds(); return; }
   clearTimeout(resizeT);
   resizeT = setTimeout(() => {
-    if (driftActive()) { driftBounds(); return; }
     if (!playing) makeBubble(false);
     else fitBoard(); // mid-round: resize the cells in place, keep the numbers
   }, 250);
